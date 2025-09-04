@@ -1,0 +1,12 @@
+# config.toml
+[apps.myapp]
+request_dir = ".tasks/myapp/request"
+result_dir  = ".tasks/myapp/results"
+
+[apps.myapp.hook]
+command = "/tmp/notify.sh"
+args = ["--id", "{uuid}", "--file", "{request_file}"]
+
+[apps.otherapp]
+request_dir = "tasks/other/request"
+result_dir  = "tasks/other/results"
