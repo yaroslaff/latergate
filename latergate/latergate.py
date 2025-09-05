@@ -5,8 +5,8 @@ import json, os, tomllib, subprocess
 from .app import app
 
 def ensure_dirs(appconf):
-    os.makedirs(appconf["request_dir"], exist_ok=True)
-    os.makedirs(appconf["result_dir"], exist_ok=True)
+    os.makedirs(os.path.expanduser(appconf["request_dir"]), exist_ok=True)
+    os.makedirs(os.path.expanduser(appconf["result_dir"]), exist_ok=True)
 
 
 _config = None
@@ -33,7 +33,8 @@ async def submit(app_name: str, request: Request):
     data = await request.json()
     uid = str(uuid4())
 
-    req_path = os.path.join(appconf["request_dir"], f"{uid}.json")
+    req_path = os.path.join(os.path.expanduser(appconf["request_dir"]), f"{uid}.json")
+
     with open(req_path, "w") as f:
         json.dump(data, f)
 
@@ -52,7 +53,7 @@ async def submit(app_name: str, request: Request):
     return {"uuid": uid}
 
 
-@app.get("/{app_name}/tasks/result/{uuid}")
+@app.get("/{app_name}/result/{uuid}")
 async def get_result(app_name: str, uuid: str):
     if app_name not in _config["apps"]:
         raise HTTPException(404, "Unknown app")
@@ -60,7 +61,8 @@ async def get_result(app_name: str, uuid: str):
     appconf = _config["apps"][app_name]
     ensure_dirs(appconf)
 
-    path = os.path.join(appconf["result_dir"], f"{uuid}.json")
+    path = os.path.expanduser(os.path.join(appconf["result_dir"], f"{uuid}.json"))
+    
     if not os.path.exists(path):
         raise HTTPException(404, "Result not found")
 
